@@ -10,7 +10,7 @@
 [![Python](https://img.shields.io/badge/-Python-464646?style=plastic&logo=Python&logoColor=56C0C0&color=008080)](https://www.python.org/) [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=plastic&logo=GitHub%20actions&logoColor=56C0C0&color=008080)](https://github.com/features/actions)
 ![Python](https://img.shields.io/badge/python-bs4-blue) ![Python](https://img.shields.io/badge/python-tqdm-blue)
 
-![workflow](https://github.com/DNKer/bs4_parser_pep/actions/workflows/bs4_parser_pep_workflow/badge.svg?branch=master&event=push)
+![workflow](https://github.com/DNKer/bs4_parser_pep/actions/workflows/bs4_parser_pep_workflow.yml/badge.svg?branch=master&event=push)
 
 ## Установка
 
