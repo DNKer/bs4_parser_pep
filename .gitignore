@@ -61,6 +61,10 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# Cache stuff:
+http_cache.sqlite
+.mypy_cache
+
 # Flask stuff:
 instance/
 .webassets-cache
@@ -143,7 +147,6 @@ dmypy.json
 # Local History for Visual Studio Code
 .history/
 
-.mypy_cache
-http_cache.sqlite
+# Local logs and downloads
 downloads/
 logs/
