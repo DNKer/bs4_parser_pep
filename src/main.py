@@ -22,7 +22,8 @@ def whats_new(session):
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
     response = get_response(session, whats_new_url)
     if response is None:
-        return
+        logging.error('Тег не найден.')
+        raise ParserFindTagException('Ничего не нашлось.')
 
     soup = BeautifulSoup(response.text, features='lxml')
     main_div = find_tag(
