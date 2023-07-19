@@ -1,14 +1,20 @@
-# outputs.py
 import csv
 import datetime as dt
 import logging
 
 from prettytable import PrettyTable
 
-from constants import BASE_DIR, DATETIME_FORMAT
+from constants import (
+    BASE_DIR,
+    DATETIME_FORMAT,
+)
+from exceptions import (
+    ParserDirCreateException,
+    ParserFileOutputException,
+)
 
 
-def control_output(results, cli_args):
+def control_output(results, cli_args) -> None:
     """Вывод в заданном формате."""
     output = cli_args.output
     if output == 'pretty':
@@ -19,13 +25,13 @@ def control_output(results, cli_args):
         default_output(results)
 
 
-def default_output(results):
+def default_output(results) -> None:
     """Печать списка results построчно."""
     for row in results:
         print(*row)
 
 
-def pretty_output(results):
+def pretty_output(results) -> None:
     """Выводит данные в PrettyTable."""
     table = PrettyTable()
     table.field_names = results[0]
@@ -34,10 +40,15 @@ def pretty_output(results):
     print(table)
 
 
-def file_output(results, cli_args):
+def file_output(results, cli_args) -> None:
     """Вывод данных в файл csv."""
     results_dir = BASE_DIR / 'results'
-    results_dir.mkdir(exist_ok=True)
+    try:
+        results_dir.mkdir(exist_ok=True)
+    except OSError as error:
+        logging.error(f'Ошибка создания каталога: {results_dir}. '
+                      f'Ошибка: {error}')
+        raise ParserDirCreateException
     parser_mode = cli_args.mode
     now = dt.datetime.now()
     now_formatted = now.strftime(DATETIME_FORMAT)
@@ -52,3 +63,4 @@ def file_output(results, cli_args):
         logging.info(f'Файл с результатами был сохранён: {file_path}')
     except Exception as error:
         logging.exception(f'В процессе загрузки возникла ошибка: {error}')
+        raise ParserFileOutputException

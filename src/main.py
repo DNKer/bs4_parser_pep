@@ -1,4 +1,3 @@
-# main.py
 import logging
 import re
 from collections import defaultdict
@@ -8,12 +7,26 @@ import requests_cache
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from configs import configure_argument_parser, configure_logging
-from constants import (BASE_DIR, ENCODING, EXPECTED_STATUS, MAIN_DOC_URL,
-                       PEP_URL)
-from exceptions import ParserFindTagException
+from configs import (
+    configure_argument_parser,
+    configure_logging,
+)
+from constants import (
+    BASE_DIR,
+    ENCODING,
+    EXPECTED_STATUS,
+    FUTURES,
+    MAIN_DOC_URL,
+    PATTERN,
+    PDF_A4_TAG,
+    PEP_URL,
+)
+from exceptions import (
+    ParserFindTagException,
+    ParserDirCreateException,
+)
 from outputs import control_output
-from utils import find_tag, get_response
+from utils import get_response, find_tag
 
 
 def whats_new(session):
@@ -25,7 +38,7 @@ def whats_new(session):
         logging.error('Тег не найден.')
         raise ParserFindTagException('Ничего не нашлось.')
 
-    soup = BeautifulSoup(response.text, features='lxml')
+    soup = BeautifulSoup(response.text, features=FUTURES)
     main_div = find_tag(
         soup, 'section', attrs={'id': 'what-s-new-in-python'})
     div_with_ul = find_tag(
@@ -39,7 +52,7 @@ def whats_new(session):
         response = get_response(session, version_link)
         if response is None:
             continue
-        soup = BeautifulSoup(response.text, 'lxml')
+        soup = BeautifulSoup(response.text, FUTURES)
         h1 = find_tag(soup, 'h1')
         dl = find_tag(soup, 'dl')
         dl_text = dl.text.replace('\n', ' ')
@@ -53,7 +66,7 @@ def latest_versions(session):
     """Собирает информацию о последних версиях документации."""
     response = session.get(MAIN_DOC_URL)
     response.encoding = ENCODING
-    soup = BeautifulSoup(response.text, features='lxml')
+    soup = BeautifulSoup(response.text, features=FUTURES)
     sidebar = find_tag(soup, 'div', attrs={'class': 'sphinxsidebarwrapper'})
     ul_tags = sidebar.find_all('ul')
 
@@ -65,7 +78,7 @@ def latest_versions(session):
         logging.error('Тег не найден.')
         raise ParserFindTagException('Ничего не нашлось.')
     results: list[str] = []
-    pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
+    pattern = PATTERN
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     for a_tag in a_tags:
         link = a_tag['href']
@@ -81,16 +94,21 @@ def latest_versions(session):
 def download(session):
     """Скачивает архив с документацией."""
     downloads_dir = BASE_DIR / 'downloads'
-    downloads_dir.mkdir(exist_ok=True)
+    try:
+        downloads_dir.mkdir(exist_ok=True)
+    except OSError as error:
+        logging.error(f'Ошибка создания каталога: {downloads_dir}. '
+                      f'Ошибка: {error}')
+        raise ParserDirCreateException
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     response = session.get(downloads_url)
     response.encoding = ENCODING
-    soup = BeautifulSoup(response.text, features='lxml')
+    soup = BeautifulSoup(response.text, features=FUTURES)
 
     main_tag = find_tag(soup, 'div', {'role': 'main'})
     table_tag = find_tag(main_tag, 'table', {'class': 'docutils'})
     pdf_a4_tag = find_tag(
-        table_tag, 'a', {'href': re.compile(r'.+pdf-a4\.zip$')})
+        table_tag, 'a', {'href': re.compile(PDF_A4_TAG)})
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
@@ -107,7 +125,7 @@ def download(session):
 def pep(session):
     """Собирает информацию о статусах PEP."""
     response = get_response(session, PEP_URL)
-    soup = BeautifulSoup(response.text, features='lxml')
+    soup = BeautifulSoup(response.text, features=FUTURES)
 
     logs: list[str] = []
     section = find_tag(soup, 'section', attrs={'id': 'numerical-index'})
@@ -120,7 +138,7 @@ def pep(session):
         table_data = find_tag(item, 'td')
         link = urljoin(PEP_URL, table_data.find_next_sibling().a['href'])
         response = get_response(session, link)
-        soup = BeautifulSoup(response.text, features='lxml')
+        soup = BeautifulSoup(response.text, features=FUTURES)
         status = table_data.text[1:]
         description_list = find_tag(soup, 'dl')
         status_page = (

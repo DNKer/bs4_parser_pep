@@ -1,10 +1,15 @@
-# configs.py
 import argparse
 import logging
 from logging.handlers import RotatingFileHandler
 
-from constants import (BACKUP_COUNT, BASE_DIR,  DATETIME_FORMAT, LOG_FORMAT,
-                       MAX_BYTES)
+from constants import (
+    BACKUP_COUNT,
+    DATETIME_FORMAT,
+    LOG_DIR,
+    LOG_FILE,
+    LOG_FORMAT,
+    MAX_BYTES
+)
 
 
 def configure_argument_parser(available_modes) -> argparse.ArgumentParser:
@@ -32,16 +37,17 @@ def configure_argument_parser(available_modes) -> argparse.ArgumentParser:
 
 def configure_logging() -> None:
     """Конфигурация логов."""
-    log_dir = BASE_DIR / 'logs'
-    log_dir.mkdir(exist_ok=True)
-    log_file = log_dir / 'parser.log'
-    rotating_handler = RotatingFileHandler(
-        log_file, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT
-    )
-    # Настройка логирования basicConfig.
-    logging.basicConfig(
-        datefmt=DATETIME_FORMAT,
-        format=LOG_FORMAT,
-        level=logging.INFO,
-        handlers=(rotating_handler, logging.StreamHandler())
-    )
+    try:
+        LOG_DIR.mkdir(exist_ok=True)
+        rotating_handler = RotatingFileHandler(
+            LOG_FILE, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT
+        )
+        logging.basicConfig(
+            datefmt=DATETIME_FORMAT,
+            format=LOG_FORMAT,
+            level=logging.INFO,
+            handlers=(rotating_handler, logging.StreamHandler())
+        )
+    except OSError as error:
+        logging.exception(f'В процессе создания {LOG_DIR} '
+                          f'возникла ошибка: {error}')
