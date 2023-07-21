@@ -1,7 +1,7 @@
 import csv
 import datetime as dt
 import logging
-from typing import Dict
+from typing import Any, Dict, Union
 
 from prettytable import PrettyTable
 
@@ -59,7 +59,7 @@ def file_output(results, cli_args) -> None:
 
 def control_output(results, cli_args) -> None:
     """Вывод в заданном формате."""
-    cli_args_dict: Dict[str, None] = {
+    cli_args_dict: Dict[Union[str, None], Any] = {
         'pretty': pretty_output,
         'file': file_output,
         None: default_output

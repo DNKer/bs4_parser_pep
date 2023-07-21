@@ -12,5 +12,5 @@ class Choices(Enum):
     PRETTY = 'pretty'
     FILE = 'file'
 
-    def __str__(self):
+    def __str__(self) -> None:
         return self.value

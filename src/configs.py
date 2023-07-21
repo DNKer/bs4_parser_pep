@@ -10,7 +10,7 @@ from constants import (
     LOG_FORMAT,
     MAX_BYTES
 )
-from enams.choices_arguments import Choices
+from enums.choices_arguments import Choices
 
 
 def configure_argument_parser(available_modes) -> argparse.ArgumentParser:
