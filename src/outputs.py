@@ -59,9 +59,9 @@ def file_output(results, cli_args) -> None:
 
 def control_output(results, cli_args) -> None:
     """Вывод в заданном формате."""
-    CLI_ARGS_DICT: Dict[str, None] = {
+    cli_args_dict: Dict[str, None] = {
         'pretty': pretty_output,
         'file': file_output,
         None: default_output
     }
-    CLI_ARGS_DICT.get(cli_args.output)(results, cli_args)
+    cli_args_dict.get(cli_args.output)(results, cli_args)
