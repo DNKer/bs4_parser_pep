@@ -1,12 +1,14 @@
 import csv
 import datetime as dt
 import logging
+from typing import Dict
 
 from prettytable import PrettyTable
 
 from constants import (
     BASE_DIR,
     DATETIME_FORMAT,
+    ENCODING,
 )
 from exceptions import (
     ParserDirCreateException,
@@ -14,24 +16,13 @@ from exceptions import (
 )
 
 
-def control_output(results, cli_args) -> None:
-    """Вывод в заданном формате."""
-    output = cli_args.output
-    if output == 'pretty':
-        pretty_output(results)
-    elif output == 'file':
-        file_output(results, cli_args)
-    else:
-        default_output(results)
-
-
-def default_output(results) -> None:
+def default_output(results, cli_args) -> None:
     """Печать списка results построчно."""
     for row in results:
         print(*row)
 
 
-def pretty_output(results) -> None:
+def pretty_output(results, cli_args) -> None:
     """Выводит данные в PrettyTable."""
     table = PrettyTable()
     table.field_names = results[0]
@@ -57,10 +48,20 @@ def file_output(results, cli_args) -> None:
     file_name = f'{parser_mode}_{now_formatted}.csv'
     file_path = results_dir / file_name
     try:
-        with open(file_path, 'w', encoding='utf-8') as f:
-            writer = csv.writer(f, dialect='unix')
+        with open(file_path, 'w', encoding=ENCODING) as file:
+            writer = csv.writer(file, dialect='unix')
             writer.writerows(results)
         logging.info(f'Файл с результатами был сохранён: {file_path}')
     except Exception as error:
         logging.exception(f'В процессе загрузки возникла ошибка: {error}')
         raise ParserFileOutputException
+
+
+def control_output(results, cli_args) -> None:
+    """Вывод в заданном формате."""
+    CLI_ARGS: Dict[str, None] = {
+        'pretty': pretty_output,
+        'file': file_output,
+        None: default_output
+    }
+    CLI_ARGS.get(cli_args.output)(results, cli_args)
